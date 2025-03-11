@@ -172,6 +172,23 @@ export function SideBar(props: { className?: string }) {
 
   useHotKey();
 
+  const handleTabChange = (tab: 'chat' | 'mask' | 'config') => {
+    setActiveTab(tab);
+    
+    // Handle content switching based on tab
+    if (tab === 'chat') {
+      // Select first chat session and show its content
+      const firstChat = chatStore.sessions[0];
+      if (firstChat) {
+        chatStore.selectSession(0);
+        navigate(Path.Chat);
+      }
+    } else if (tab === 'config') {
+      // Show settings page
+      navigate(Path.Settings);
+    }
+  };
+
   return (
     <div
       className={`${styles.sidebar} ${props.className} ${
@@ -205,7 +222,7 @@ export function SideBar(props: { className?: string }) {
           className={`${styles["sidebar-bar-button"]} ${
             activeTab === 'chat' ? styles["sidebar-bar-button-active"] : ""
           }`}
-          onClick={() => setActiveTab('chat')}
+          onClick={() => handleTabChange('chat')}
           shadow
         />
         <IconButton
@@ -214,7 +231,7 @@ export function SideBar(props: { className?: string }) {
           className={`${styles["sidebar-bar-button"]} ${
             activeTab === 'mask' ? styles["sidebar-bar-button-active"] : ""
           }`}
-          onClick={() => setActiveTab('mask')}
+          onClick={() => handleTabChange('mask')}
           shadow
         />
         <IconButton
@@ -223,7 +240,7 @@ export function SideBar(props: { className?: string }) {
           className={`${styles["sidebar-bar-button"]} ${
             activeTab === 'config' ? styles["sidebar-bar-button-active"] : ""
           }`}
-          onClick={() => setActiveTab('config')}
+          onClick={() => handleTabChange('config')}
           shadow
         />
       </div>

@@ -8,7 +8,7 @@ import {
 
 import { Link, useNavigate } from "react-router-dom";
 import { Path } from "../constant";
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useState } from "react";
 import { showConfirm } from "./ui-lib";
 import { useMobileScreen } from "../utils";
 import Locale from "../locales";
@@ -69,12 +69,20 @@ export function ConfigList(props: { narrow?: boolean }) {
   const navigate = useNavigate();
   const isMobileScreen = useMobileScreen();
 
+  // Add selected state
+  const [selectedId, setSelectedId] = useState("general");
+
   const configs = [
     {
       id: "general",
       title: Locale.Settings.Title,  // "General" in English, "设置" in Chinese
     }
   ];
+
+  // When mounted, navigate to settings page
+  useEffect(() => {
+    navigate(Path.Settings);
+  }, []);
 
   const onDragEnd: OnDragEndResponder = (result) => {
     const { destination, source } = result;
@@ -106,8 +114,9 @@ export function ConfigList(props: { narrow?: boolean }) {
                 key={item.id}
                 id={item.id}
                 index={i}
-                selected={false}  // We can implement selection state later
+                selected={selectedId === item.id}
                 onClick={() => {
+                  setSelectedId(item.id);
                   navigate(Path.Settings);
                 }}
                 narrow={props.narrow}
