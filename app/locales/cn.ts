@@ -128,6 +128,7 @@ const cn = {
     Revert: "撤销",
   },
   Settings: {
+    Name: "设置",
     Title: "设置",
     SubTitle: "所有设置选项",
 

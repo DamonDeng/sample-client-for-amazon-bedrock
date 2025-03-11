@@ -150,7 +150,7 @@ export function SideBar(props: { className?: string }) {
   const [userInfo, setUserInfo] = useState<any>({});
 
   // Add state for active tab
-  const [activeTab, setActiveTab] = useState<'chat' | 'mask'>('chat');
+  const [activeTab, setActiveTab] = useState<'chat' | 'mask' | 'config'>('chat');
 
   useEffect(() => {
     if (accessStore.awsCognitoUser) {
@@ -213,6 +213,15 @@ export function SideBar(props: { className?: string }) {
           onClick={() => setActiveTab('mask')}
           shadow
         />
+        <IconButton
+          icon={<SettingsIcon />}
+          text={shouldNarrow ? undefined : Locale.Settings.Name}
+          className={`${styles["sidebar-bar-button"]} ${
+            activeTab === 'config' ? styles["sidebar-bar-button-active"] : ""
+          }`}
+          onClick={() => setActiveTab('config')}
+          shadow
+        />
       </div>
 
       <div
@@ -225,8 +234,12 @@ export function SideBar(props: { className?: string }) {
       >
         {activeTab === 'chat' ? (
           <ChatList narrow={shouldNarrow} />
-        ) : (
+        ) : activeTab === 'mask' ? (
           <MaskList narrow={shouldNarrow} />
+        ) : (
+          <div className={styles["mask-placeholder"]}>
+            Config list is coming soon
+          </div>
         )}
       </div>
 
@@ -241,11 +254,6 @@ export function SideBar(props: { className?: string }) {
                 }
               }}
             />
-          </div>
-          <div className={styles["sidebar-action"]}>
-            <Link to={Path.Settings}>
-              <IconButton icon={<SettingsIcon />} shadow />
-            </Link>
           </div>
           <div className={styles["sidebar-action"]}>
             <a href={REPO_URL} target="_blank" rel="noopener noreferrer">

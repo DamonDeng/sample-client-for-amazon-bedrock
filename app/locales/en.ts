@@ -132,6 +132,7 @@ const en: LocaleType = {
     Revert: "Revert",
   },
   Settings: {
+    Name: "Settings",
     Title: "Settings",
     SubTitle: "All Settings",
     Danger: {
