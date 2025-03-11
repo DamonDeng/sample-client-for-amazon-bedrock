@@ -19,11 +19,15 @@ export type Mask = {
   builtin: boolean;
 };
 
-export const DEFAULT_MASK_STATE = {
-  masks: {} as Record<string, Mask>,
+export type MaskState = {
+  masks: Record<string, Mask>;
+  selectedId?: string;
 };
 
-export type MaskState = typeof DEFAULT_MASK_STATE;
+export const DEFAULT_MASK_STATE = {
+  masks: {} as Record<string, Mask>,
+  selectedId: undefined,
+};
 
 export const DEFAULT_MASK_AVATAR = "gpt-bot";
 export const createEmptyMask = () =>
@@ -43,7 +47,13 @@ export const useMaskStore = createPersistStore(
   { ...DEFAULT_MASK_STATE },
 
   (set, get) => ({
+    select(id: string) {
+      console.log("Selecting mask with id:", id);
+      set(() => ({ selectedId: id }));
+      console.log("New state:", get());
+    },
     create(mask?: Partial<Mask>) {
+      console.log("Creating new mask:", mask);
       const masks = get().masks;
       const id = nanoid();
       masks[id] = {
@@ -55,6 +65,7 @@ export const useMaskStore = createPersistStore(
 
       set(() => ({ masks }));
       get().markUpdate();
+      console.log("Created mask:", masks[id]);
 
       return masks[id];
     },
@@ -74,9 +85,12 @@ export const useMaskStore = createPersistStore(
       set(() => ({ masks }));
       get().markUpdate();
     },
-
     get(id?: string) {
-      return get().masks[id ?? 1145141919810];
+      const masks = get().masks;
+      const selectedId = get().selectedId;
+      const result = masks[id ?? selectedId];
+      console.log("Getting mask:", { id, selectedId, result });
+      return result;
     },
     getAll() {
       const userMasks = Object.values(get().masks).sort(

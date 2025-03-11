@@ -104,6 +104,13 @@ export function MaskList(props: { narrow?: boolean }) {
   const navigate = useNavigate();
   const isMobileScreen = useMobileScreen();
 
+  useEffect(() => {
+    if (selectedMask) {
+      console.log("Selected mask:", selectedMask);
+      navigate(Path.Masks);
+    }
+  }, [selectedMask, navigate]);
+
   const onDragEnd: OnDragEndResponder = (result) => {
     const { destination, source } = result;
     if (!destination) {
@@ -138,6 +145,16 @@ export function MaskList(props: { narrow?: boolean }) {
                 index={i}
                 selected={selectedMask?.id === item.id}
                 onClick={() => {
+                  console.log("Clicking mask:", item);
+                  if (item.builtin) {
+                    // For built-in masks, we need to create a copy in the local store
+                    console.log("Creating local copy of built-in mask");
+                    const localMask = maskStore.create(item);
+                    maskStore.select(localMask.id);
+                  } else {
+                    console.log("Selecting existing mask");
+                    maskStore.select(item.id);
+                  }
                   navigate(Path.Masks);
                 }}
                 onDelete={async () => {
