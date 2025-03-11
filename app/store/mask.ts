@@ -30,11 +30,13 @@ export const DEFAULT_MASK_STATE = {
 };
 
 export const DEFAULT_MASK_AVATAR = "gpt-bot";
+export const DEFAULT_MASK_NAME = "New Mask";
+
 export const createEmptyMask = () =>
   ({
     id: nanoid(),
     avatar: DEFAULT_MASK_AVATAR,
-    name: DEFAULT_TOPIC,
+    name: DEFAULT_MASK_NAME,
     context: [],
     syncGlobalConfig: true, // use global config as default
     modelConfig: { ...useAppConfig.getState().modelConfig },

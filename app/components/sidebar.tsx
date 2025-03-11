@@ -18,6 +18,7 @@ import DragIcon from "../icons/drag.svg";
 import Locale from "../locales";
 
 import { useAppConfig, useChatStore, useAccessStore } from "../store";
+import { useMaskStore } from "../store/mask";
 import { getAWSCognitoUserInfo } from "../client/platforms/aws_cognito";
 
 import {
@@ -135,6 +136,7 @@ function useDragSideBar() {
 export function SideBar(props: { className?: string }) {
   const chatStore = useChatStore();
   const accessStore = useAccessStore();
+  const maskStore = useMaskStore();
 
   // drag side bar
   const { onDragStart, shouldNarrow } = useDragSideBar();
@@ -252,19 +254,32 @@ export function SideBar(props: { className?: string }) {
           </div>
         </div>
         <div>
-          <IconButton
-            icon={<AddIcon />}
-            text={shouldNarrow ? undefined : Locale.Home.NewChat}
-            onClick={() => {
-              if (config.dontShowMaskSplashScreen) {
-                chatStore.newSession();
-                navigate(Path.Chat);
-              } else {
-                navigate(Path.NewChat);
-              }
-            }}
-            shadow
-          />
+          {activeTab === 'chat' ? (
+            <IconButton
+              icon={<AddIcon />}
+              text={shouldNarrow ? undefined : Locale.Home.NewChat}
+              onClick={() => {
+                if (config.dontShowMaskSplashScreen) {
+                  chatStore.newSession();
+                  navigate(Path.Chat);
+                } else {
+                  navigate(Path.NewChat);
+                }
+              }}
+              shadow
+            />
+          ) : (
+            <IconButton
+              icon={<AddIcon />}
+              text={shouldNarrow ? undefined : Locale.Mask.Page.Create}
+              onClick={() => {
+                const createdMask = maskStore.create();
+                maskStore.select(createdMask.id);
+                navigate(Path.Masks);
+              }}
+              shadow
+            />
+          )}
         </div>
       </div>
 
