@@ -5,6 +5,7 @@ import { ModelConfig, useAppConfig } from "./config";
 import { StoreKey } from "../constant";
 import { nanoid } from "nanoid";
 import { createPersistStore } from "../utils/store";
+import Locale from "../locales";
 
 export type Mask = {
   id: string;
@@ -30,13 +31,12 @@ export const DEFAULT_MASK_STATE = {
 };
 
 export const DEFAULT_MASK_AVATAR = "gpt-bot";
-export const DEFAULT_MASK_NAME = "New Mask";
 
 export const createEmptyMask = () =>
   ({
     id: nanoid(),
     avatar: DEFAULT_MASK_AVATAR,
-    name: DEFAULT_MASK_NAME,
+    name: Locale.Store.DefaultMaskName,
     context: [],
     syncGlobalConfig: true, // use global config as default
     modelConfig: { ...useAppConfig.getState().modelConfig },

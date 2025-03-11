@@ -415,14 +415,14 @@ const cn = {
     },
   },
   Store: {
-    DefaultTopic: "新的聊天",
-    BotHello: "有什么可以帮你的吗",
+    DefaultTopic: "新的对话",
+    DefaultMaskName: "新面具",
+    BotHello: "你好！我是人工智能助手，有什么可以帮你的吗？",
     Error: "出错了，稍后重试吧",
     Prompt: {
       History: (content: string) => "这是历史聊天总结作为前情提要：" + content,
       Topic:
-        "Use 2 to 8 Chinese characters to summarize the brief topic of the conversation, do not explain, do not use punctuation, do not use mood words, do not add extra text, do not bold, if there is no topic, please directly return “闲聊”",
-      // "使用四到五个字直接返回这句话的简要主题，不要解释、不要标点、不要语气词、不要多余文本，不要加粗，如果没有主题，请直接返回“闲聊”",
+      "使用四到五个字直接返回这句话的简要主题，不要解释、不要标点、不要语气词、不要多余文本，不要加粗，如果没有主题，请直接返回\"闲聊\"",
       Summarize:
         "简要总结一下对话内容，用作后续的上下文提示 prompt，控制在 200 字以内",
     },
