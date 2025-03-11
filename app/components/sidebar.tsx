@@ -36,6 +36,7 @@ import dynamic from "next/dynamic";
 import { showConfirm, showToast } from "./ui-lib";
 import { MaskList } from "./mask-list";
 import { ConfigList } from "./config-list";
+import { useSidebarStore } from "../store/sidebar";
 
 const ChatList = dynamic(async () => (await import("./chat-list")).ChatList, {
   loading: () => null,
@@ -150,8 +151,10 @@ export function SideBar(props: { className?: string }) {
   );
   const [userInfo, setUserInfo] = useState<any>({});
 
-  // Add state for active tab
-  const [activeTab, setActiveTab] = useState<'chat' | 'mask' | 'config'>('chat');
+  // Replace the local state with the store
+  const sidebarStore = useSidebarStore();
+  const activeTab = sidebarStore.activeTab;
+  const setActiveTab = sidebarStore.setActiveTab;
 
   useEffect(() => {
     if (accessStore.awsCognitoUser) {

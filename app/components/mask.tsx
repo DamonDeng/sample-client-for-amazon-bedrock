@@ -59,6 +59,7 @@ import {
   OnDragEndResponder,
 } from "@hello-pangea/dnd";
 import { getMessageTextContent } from "../utils";
+import { useSidebarStore } from "../store/sidebar";
 
 // drag and drop helper function
 function reorder<T>(list: T[], startIndex: number, endIndex: number): T[] {
@@ -403,129 +404,36 @@ export function ContextPrompts(props: {
 
 export function MaskPage() {
   const navigate = useNavigate();
-
   const maskStore = useMaskStore();
   const chatStore = useChatStore();
+  const sidebarStore = useSidebarStore();
 
-  const [filterLang, setFilterLang] = useState<Lang>();
+  // Get the selected mask
+  const mask = maskStore.get();
 
-  const allMasks = maskStore
-    .getAll()
-    .filter((m) => !filterLang || m.lang === filterLang);
-
-  const [searchMasks, setSearchMasks] = useState<Mask[]>([]);
-  const [searchText, setSearchText] = useState("");
-  const masks = searchText.length > 0 ? searchMasks : allMasks;
-
-  // refactored already, now it accurate
-  const onSearch = (text: string) => {
-    setSearchText(text);
-    if (text.length > 0) {
-      const result = allMasks.filter((m) =>
-        m.name.toLowerCase().includes(text.toLowerCase()),
-      );
-      setSearchMasks(result);
-    } else {
-      setSearchMasks(allMasks);
-    }
-  };
-
-  const [editingMaskId, setEditingMaskId] = useState<string | undefined>();
-  const editingMask =
-    maskStore.get(editingMaskId) ?? BUILTIN_MASK_STORE.get(editingMaskId);
-  const closeMaskModal = () => setEditingMaskId(undefined);
-
-  const downloadAll = () => {
-    downloadAs(JSON.stringify(masks.filter((v) => !v.builtin)), FileName.Masks);
-  };
-
-  const importFromFile = () => {
-    readFromFile().then((content) => {
-      try {
-        const importMasks = JSON.parse(content);
-        if (Array.isArray(importMasks)) {
-          for (const mask of importMasks) {
-            if (mask.name) {
-              maskStore.create(mask);
-            }
-          }
-          return;
-        }
-        //if the content is a single mask.
-        if (importMasks.name) {
-          maskStore.create(importMasks);
-        }
-      } catch {}
-    });
-  };
-
-  function curl(
-    urlString: string,
-    method: string,
-    headers: { [key: string]: string },
-  ): Promise<string> {
-    return new Promise((resolve, reject) => {
-      const parsedUrl = url.parse(urlString);
-
-      const options = {
-        hostname: parsedUrl.hostname,
-        port: parsedUrl.port ? parseInt(parsedUrl.port) : 443,
-        path: parsedUrl.path,
-        method: method,
-        headers: headers,
-      };
-
-      const req = https.request(options, (res) => {
-        let data = "";
-
-        res.on("data", (chunk) => {
-          data += chunk;
-        });
-
-        res.on("end", () => {
-          resolve(data);
-        });
-      });
-
-      req.on("error", (err) => {
-        reject(err);
-      });
-
-      req.end();
-    });
+  if (!mask) {
+    return (
+      <div className={styles["mask-page"]}>
+        <div className="window-header">
+          <div className="window-header-title">
+            <div className="window-header-main-title">{Locale.Mask.Page.Title}</div>
+          </div>
+          <div className="window-actions">
+            <div className="window-action-button">
+              <IconButton
+                icon={<CloseIcon />}
+                bordered
+                onClick={() => navigate(-1)}
+              />
+            </div>
+          </div>
+        </div>
+        <div className={styles["mask-page-body"]}>
+          <div>{Locale.Mask.Page.SelectHint}</div>
+        </div>
+      </div>
+    );
   }
-
-  const importFromLink = () => {
-    const url = "https://i8mf90he81.execute-api.us-east-1.amazonaws.com";
-    const method = "GET";
-    const headers = {};
-
-    curl(url, method, headers)
-      .then((data) => {
-        console.log(data);
-        try {
-          const importMasks = JSON.parse(data);
-          if (Array.isArray(importMasks)) {
-            for (const mask of importMasks) {
-              if (mask.name) {
-                maskStore.create(mask);
-              }
-            }
-            return;
-          }
-          //if the content is a single mask.
-          if (importMasks.name) {
-            maskStore.create(importMasks);
-          }
-          console.log("import successful");
-        } catch (err) {
-          console.error(err);
-        }
-      })
-      .catch((err) => {
-        console.error(err);
-      });
-  };
 
   return (
     <ErrorBoundary>
@@ -533,10 +441,10 @@ export function MaskPage() {
         <div className="window-header">
           <div className="window-header-title">
             <div className="window-header-main-title">
-              {Locale.Mask.Page.Title}
+              {mask.builtin ? Locale.Mask.Page.ViewTitle : Locale.Mask.Page.EditTitle}
             </div>
             <div className="window-header-submai-title">
-              {Locale.Mask.Page.SubTitle(allMasks.length)}
+              {mask.name}
             </div>
           </div>
 
@@ -545,26 +453,24 @@ export function MaskPage() {
               <IconButton
                 icon={<DownloadIcon />}
                 bordered
-                onClick={downloadAll}
+                onClick={() => downloadAs(JSON.stringify(mask), `${mask.name}.json`)}
                 text={Locale.UI.Export}
               />
             </div>
-            <div className="window-action-button">
-              <IconButton
-                icon={<UploadIcon />}
-                text={Locale.UI.Import}
-                bordered
-                onClick={() => importFromFile()}
-              />
-            </div>
-            <div className="window-action-button">
-              <IconButton
-                icon={<UploadIcon />}
-                text={Locale.UI.ImportFromHub}
-                bordered
-                onClick={() => importFromLink()}
-              />
-            </div>
+            {!mask.builtin && (
+              <div className="window-action-button">
+                <IconButton
+                  icon={<AddIcon />}
+                  text={Locale.Mask.Item.Chat}
+                  bordered
+                  onClick={() => {
+                    chatStore.newSession(mask);
+                    sidebarStore.setActiveTab('chat');
+                    navigate(Path.Chat);
+                  }}
+                />
+              </div>
+            )}
             <div className="window-action-button">
               <IconButton
                 icon={<CloseIcon />}
@@ -576,145 +482,13 @@ export function MaskPage() {
         </div>
 
         <div className={styles["mask-page-body"]}>
-          <div className={styles["mask-filter"]}>
-            <input
-              type="text"
-              className={styles["search-bar"]}
-              placeholder={Locale.Mask.Page.Search}
-              autoFocus
-              onInput={(e) => onSearch(e.currentTarget.value)}
-            />
-            <Select
-              className={styles["mask-filter-lang"]}
-              value={filterLang ?? Locale.Settings.Lang.All}
-              onChange={(e) => {
-                const value = e.currentTarget.value;
-                if (value === Locale.Settings.Lang.All) {
-                  setFilterLang(undefined);
-                } else {
-                  setFilterLang(value as Lang);
-                }
-              }}
-            >
-              <option key="all" value={Locale.Settings.Lang.All}>
-                {Locale.Settings.Lang.All}
-              </option>
-              {AllLangs.map((lang) => (
-                <option value={lang} key={lang}>
-                  {ALL_LANG_OPTIONS[lang]}
-                </option>
-              ))}
-            </Select>
-
-            <IconButton
-              className={styles["mask-create"]}
-              icon={<AddIcon />}
-              text={Locale.Mask.Page.Create}
-              bordered
-              onClick={() => {
-                const createdMask = maskStore.create();
-                setEditingMaskId(createdMask.id);
-              }}
-            />
-          </div>
-
-          <div>
-            {masks.map((m) => (
-              <div className={styles["mask-item"]} key={m.id}>
-                <div className={styles["mask-header"]}>
-                  <div className={styles["mask-icon"]}>
-                    <MaskAvatar avatar={m.avatar} model={m.modelConfig.model} />
-                  </div>
-                  <div className={styles["mask-title"]}>
-                    <div className={styles["mask-name"]}>{m.name}</div>
-                    <div className={styles["mask-info"] + " one-line"}>
-                      {`${Locale.Mask.Item.Info(m.context.length)} / ${
-                        ALL_LANG_OPTIONS[m.lang]
-                      } / ${m.modelConfig.model}`}
-                    </div>
-                  </div>
-                </div>
-                <div className={styles["mask-actions"]}>
-                  <IconButton
-                    icon={<AddIcon />}
-                    text={Locale.Mask.Item.Chat}
-                    onClick={() => {
-                      chatStore.newSession(m);
-                      navigate(Path.Chat);
-                    }}
-                  />
-                  {m.builtin ? (
-                    <IconButton
-                      icon={<EyeIcon />}
-                      text={Locale.Mask.Item.View}
-                      onClick={() => setEditingMaskId(m.id)}
-                    />
-                  ) : (
-                    <IconButton
-                      icon={<EditIcon />}
-                      text={Locale.Mask.Item.Edit}
-                      onClick={() => setEditingMaskId(m.id)}
-                    />
-                  )}
-                  {!m.builtin && (
-                    <IconButton
-                      icon={<DeleteIcon />}
-                      text={Locale.Mask.Item.Delete}
-                      onClick={async () => {
-                        if (await showConfirm(Locale.Mask.Item.DeleteConfirm)) {
-                          maskStore.delete(m.id);
-                        }
-                      }}
-                    />
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
+          <MaskConfig
+            mask={mask}
+            updateMask={(updater) => maskStore.updateMask(mask.id, updater)}
+            readonly={mask.builtin}
+          />
         </div>
       </div>
-
-      {editingMask && (
-        <div className="modal-mask">
-          <Modal
-            title={Locale.Mask.EditModal.Title(editingMask?.builtin)}
-            onClose={closeMaskModal}
-            actions={[
-              <IconButton
-                icon={<DownloadIcon />}
-                text={Locale.Mask.EditModal.Download}
-                key="export"
-                bordered
-                onClick={() =>
-                  downloadAs(
-                    JSON.stringify(editingMask),
-                    `${editingMask.name}.json`,
-                  )
-                }
-              />,
-              <IconButton
-                key="copy"
-                icon={<CopyIcon />}
-                bordered
-                text={Locale.Mask.EditModal.Clone}
-                onClick={() => {
-                  navigate(Path.Masks);
-                  maskStore.create(editingMask);
-                  setEditingMaskId(undefined);
-                }}
-              />,
-            ]}
-          >
-            <MaskConfig
-              mask={editingMask}
-              updateMask={(updater) =>
-                maskStore.updateMask(editingMaskId!, updater)
-              }
-              readonly={editingMask.builtin}
-            />
-          </Modal>
-        </div>
-      )}
     </ErrorBoundary>
   );
 }
