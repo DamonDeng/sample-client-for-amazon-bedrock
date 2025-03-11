@@ -197,7 +197,7 @@ export function SideBar(props: { className?: string }) {
       <div className={styles["sidebar-header-bar"]}>
         <IconButton
           icon={<ChatButtonIcon />}
-          text={shouldNarrow ? undefined : "Chat"}
+          text={shouldNarrow ? undefined : Locale.Chat.Name}
           className={`${styles["sidebar-bar-button"]} ${
             activeTab === 'chat' ? styles["sidebar-bar-button-active"] : ""
           }`}
