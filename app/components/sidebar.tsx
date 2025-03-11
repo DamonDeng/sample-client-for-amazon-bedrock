@@ -35,6 +35,7 @@ import { isIOS, useMobileScreen } from "../utils";
 import dynamic from "next/dynamic";
 import { showConfirm, showToast } from "./ui-lib";
 import { MaskList } from "./mask-list";
+import { ConfigList } from "./config-list";
 
 const ChatList = dynamic(async () => (await import("./chat-list")).ChatList, {
   loading: () => null,
@@ -237,9 +238,7 @@ export function SideBar(props: { className?: string }) {
         ) : activeTab === 'mask' ? (
           <MaskList narrow={shouldNarrow} />
         ) : (
-          <div className={styles["mask-placeholder"]}>
-            Config list is coming soon
-          </div>
+          <ConfigList narrow={shouldNarrow} />
         )}
       </div>
 
