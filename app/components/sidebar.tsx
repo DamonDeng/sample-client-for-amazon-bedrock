@@ -6,6 +6,7 @@ import { IconButton } from "./button";
 import SettingsIcon from "../icons/settings.svg";
 import GithubIcon from "../icons/github.svg";
 import ChatGptIcon from "../icons/chatgpt.svg";
+import ChatButtonIcon from "../icons/chat.svg";
 import BedrockIcon from "../icons/bedrock_32.svg";
 import AddIcon from "../icons/add.svg";
 import CloseIcon from "../icons/close.svg";
@@ -32,6 +33,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { isIOS, useMobileScreen } from "../utils";
 import dynamic from "next/dynamic";
 import { showConfirm, showToast } from "./ui-lib";
+import { MaskList } from "./mask-list";
 
 const ChatList = dynamic(async () => (await import("./chat-list")).ChatList, {
   loading: () => null,
@@ -145,6 +147,9 @@ export function SideBar(props: { className?: string }) {
   );
   const [userInfo, setUserInfo] = useState<any>({});
 
+  // Add state for active tab
+  const [activeTab, setActiveTab] = useState<'chat' | 'mask'>('chat');
+
   useEffect(() => {
     if (accessStore.awsCognitoUser) {
       getAWSCognitoUserInfo().then((data) => {
@@ -189,23 +194,21 @@ export function SideBar(props: { className?: string }) {
 
       <div className={styles["sidebar-header-bar"]}>
         <IconButton
-          icon={<MaskIcon />}
-          text={shouldNarrow ? undefined : Locale.Mask.Name}
-          className={styles["sidebar-bar-button"]}
-          onClick={() => {
-            if (config.dontShowMaskSplashScreen !== true) {
-              navigate(Path.NewChat, { state: { fromHome: true } });
-            } else {
-              navigate(Path.Masks, { state: { fromHome: true } });
-            }
-          }}
+          icon={<ChatButtonIcon />}
+          text={shouldNarrow ? undefined : "Chat"}
+          className={`${styles["sidebar-bar-button"]} ${
+            activeTab === 'chat' ? styles["sidebar-bar-button-active"] : ""
+          }`}
+          onClick={() => setActiveTab('chat')}
           shadow
         />
         <IconButton
-          icon={<PluginIcon />}
-          text={shouldNarrow ? undefined : Locale.Plugin.Name}
-          className={styles["sidebar-bar-button"]}
-          onClick={() => showToast(Locale.WIP)}
+          icon={<MaskIcon />}
+          text={shouldNarrow ? undefined : Locale.Mask.Name}
+          className={`${styles["sidebar-bar-button"]} ${
+            activeTab === 'mask' ? styles["sidebar-bar-button-active"] : ""
+          }`}
+          onClick={() => setActiveTab('mask')}
           shadow
         />
       </div>
@@ -218,7 +221,11 @@ export function SideBar(props: { className?: string }) {
           }
         }}
       >
-        <ChatList narrow={shouldNarrow} />
+        {activeTab === 'chat' ? (
+          <ChatList narrow={shouldNarrow} />
+        ) : (
+          <MaskList narrow={shouldNarrow} />
+        )}
       </div>
 
       <div className={styles["sidebar-tail"]}>
